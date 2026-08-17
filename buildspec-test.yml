@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+  pre_build:
+    commands:
+      - npm ci
+      - cd server && npm ci && cd ..
+  build:
+    commands:
+      - echo "--- frontend lint ---"
+      - npm run lint
+      - echo "--- frontend build ---"
+      - npm run build
+      - echo "--- backend tests ---"
+      - cd server && npm test

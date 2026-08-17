@@ -6,17 +6,9 @@ services:
       POSTGRES_USER: todo_user
       POSTGRES_PASSWORD: todo_pass
       POSTGRES_DB: todoapp
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./server/migrations:/docker-entrypoint-initdb.d
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: ap-south-1
-        awslogs-group: /todo-app/containers
-        awslogs-stream: db
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U todo_user -d todoapp"]
       interval: 5s
@@ -24,33 +16,21 @@ services:
       retries: 5
 
   server:
-    image: ghcr.io/someshvijay/todo-app-server:latest
+    image: 782624259096.dkr.ecr.ap-south-1.amazonaws.com/todo-app-server:latest
     restart: unless-stopped
     ports:
       - "3000:3000"
     env_file:
       - ./server/.env.docker
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: ap-south-1
-        awslogs-group: /todo-app/containers
-        awslogs-stream: server
     depends_on:
       db:
         condition: service_healthy
 
   client:
-    image: ghcr.io/someshvijay/todo-app-client:latest
+    image: 782624259096.dkr.ecr.ap-south-1.amazonaws.com/todo-app-client:latest
     restart: unless-stopped
     ports:
       - "5173:80"
-    logging:
-      driver: awslogs
-      options:
-        awslogs-region: ap-south-1
-        awslogs-group: /todo-app/containers
-        awslogs-stream: client
     depends_on:
       - server
 
