@@ -1,0 +1,341 @@
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Oswald:wght@500;700&display=swap');
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: #0a0a0a;
+  font-family: 'Oswald', sans-serif;
+  color: #fff;
+  overflow-x: hidden;
+}
+
+.p5-app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ============ LEFT: CALENDAR ============ */
+.p5-calendar {
+  flex: 1.5;
+  background: #0a0a0a;
+  padding: 32px 56px 32px 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+.p5-cal-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.p5-cal-header h2 {
+  font-family: 'Anton', sans-serif;
+  font-size: 2.6rem;
+  color: #fff;
+  margin: 0;
+  letter-spacing: 2px;
+  transform: skewX(-10deg);
+  text-shadow: 3px 3px 0 #e60012;
+}
+
+.p5-cal-header button {
+  background: #fff;
+  color: #0a0a0a;
+  border: none;
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  transform: skewX(-10deg);
+}
+
+.p5-cal-header button:hover { background: #e60012; color: #fff; }
+
+.p5-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 6px;
+}
+
+.p5-weekday {
+  font-family: 'Anton', sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 1px;
+  color: #fff;
+  transform: skewX(-10deg);
+}
+
+.p5-weekday.sun { color: #e60012; }
+.p5-weekday.sat { color: #3aa0ff; }
+
+.p5-days {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  row-gap: 10px;
+  align-items: end;
+  position: relative;
+  z-index: 2;
+}
+
+.p5-num {
+  position: relative;
+  cursor: pointer;
+  padding: 2px 4px 12px;
+  display: flex;
+  align-items: flex-end;
+  min-height: 72px;
+  transform: skewX(-8deg);
+  transition: transform 0.12s ease, filter 0.12s ease;
+}
+
+.p5-num.empty { cursor: default; }
+
+.p5-num-text {
+  position: relative;
+  font-family: 'Anton', sans-serif;
+  font-size: clamp(2.2rem, 4.2vw, 3.6rem);
+  line-height: 1;
+  color: #f2f2f2;
+  display: inline-block;
+  text-shadow: 2px 2px 0 #000;
+}
+
+.p5-num.sun .p5-num-text { color: #e60012; }
+.p5-num.sat .p5-num-text { color: #3aa0ff; }
+
+.p5-num:hover:not(.empty) {
+  transform: skewX(-8deg) scale(1.05);
+  filter: drop-shadow(0 0 6px rgba(230, 0, 18, 0.7));
+}
+
+/* past days: faded and struck out */
+.p5-num.past .p5-num-text {
+  color: #3a3a3a;
+  text-shadow: none;
+}
+
+.p5-num.past .p5-num-text::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  top: 50%;
+  height: 4px;
+  background: #4a4a4a;
+  transform: translateY(-50%);
+}
+
+/* today gets an outline */
+.p5-num.today .p5-num-text {
+  -webkit-text-stroke: 2px #fff;
+}
+
+/* selected day: big red slab behind the number */
+
+.p5-num.selected .p5-num-text {
+  background: #e60012;
+  color: #fff !important;
+  padding: 2px 12px 6px;
+  text-shadow: none;
+}
+
+/* important tasks: red ring scribble */
+.p5-num.important::after {
+  content: "";
+  position: absolute;
+  left: -10px; top: -6px;
+  width: calc(100% + 2px);
+  height: calc(100% - 2px);
+  border: 3px solid #e60012;
+  border-radius: 50%;
+  transform: rotate(-3deg);
+  pointer-events: none;
+}
+
+/* all tasks done: white strike */
+.p5-num.all-done .p5-num-text {
+  opacity: 0.55;
+}
+
+/* day/night task markers */
+.p5-marks {
+  position: absolute;
+  bottom: 0;
+  left: 2px;
+  display: flex;
+  gap: 3px;
+}
+
+.p5-marks i {
+  width: 14px;
+  height: 4px;
+  display: block;
+}
+
+.mark-day   { background: #ffd400; }
+.mark-night { background: #3aa0ff; }
+
+
+/* ============ RIGHT: PANEL ============ */
+.p5-panel {
+  flex: 1;
+  background: #fff;
+  color: #0a0a0a;
+  padding: 36px 34px;
+  overflow-y: auto;
+}
+
+.p5-date-tag {
+  display: inline-block;
+  background: #0a0a0a;
+  color: #fff;
+  font-family: 'Anton', sans-serif;
+  font-size: 1.3rem;
+  padding: 6px 22px 6px 16px;
+  transform: skewX(-5deg);
+  margin-bottom: 26px;
+  letter-spacing: 1px;
+}
+
+.p5-add-form {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 30px;
+}
+
+.p5-add-form input[type="text"] {
+  flex: 1;
+  padding: 9px 10px;
+  border: 2px solid #0a0a0a;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 500;
+  text-transform: uppercase;
+  min-width: 0;
+}
+
+.p5-add-form select {
+  border: 2px solid #0a0a0a;
+  background: #0a0a0a;
+  color: #fff;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  padding: 0 6px;
+  cursor: pointer;
+}
+
+.p5-imp-toggle {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  border: 2px solid #e60012;
+  color: #e60012;
+  font-family: 'Anton', sans-serif;
+  padding: 0 8px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.p5-add-form button[type="submit"] {
+  background: #e60012;
+  color: #fff;
+  border: none;
+  padding: 0 16px;
+  font-family: 'Anton', sans-serif;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.p5-section { margin-bottom: 28px; }
+
+.p5-section-title {
+  font-family: 'Anton', sans-serif;
+  font-size: 1.55rem;
+  margin: 0 0 6px;
+  letter-spacing: 1px;
+  border-bottom: 4px solid #0a0a0a;
+  padding-bottom: 2px;
+  transform: skewX(-6deg);
+  display: inline-block;
+}
+
+.p5-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.p5-task {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px dashed #bbb;
+}
+
+.p5-task.done .p5-task-title {
+  text-decoration: line-through;
+  color: #999;
+}
+
+.p5-check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  flex: 1;
+  min-width: 0;
+}
+
+.p5-check input { accent-color: #e60012; width: 17px; height: 17px; }
+
+.p5-bang {
+  color: #e60012;
+  font-family: 'Anton', sans-serif;
+  margin-right: 6px;
+  font-size: 1.1rem;
+}
+
+.p5-task-actions { display: flex; gap: 4px; flex-shrink: 0; }
+
+.p5-task-actions button {
+  background: #fff;
+  border: 2px solid #0a0a0a;
+  padding: 3px 8px;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.p5-task-actions button:hover { background: #e60012; color: #fff; border-color: #e60012; }
+
+.p5-task.editing input {
+  flex: 1;
+  padding: 6px 8px;
+  border: 2px solid #e60012;
+  font-family: 'Oswald', sans-serif;
+  min-width: 0;
+}
+
+.p5-empty { color: #bbb; font-style: italic; margin: 4px 0; }
+
+.p5-loading {
+  color: #e60012;
+  background: #0a0a0a;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Anton', sans-serif;
+  font-size: 2rem;
+}
+
+@media (max-width: 900px) {
+  .p5-app { flex-direction: column; }
+  .p5-panel { clip-path: none; }
+}
