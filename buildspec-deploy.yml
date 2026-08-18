@@ -13,16 +13,13 @@ phases:
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - REGISTRY="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
       - aws s3 cp docker-compose.yml s3://$ARTIFACT_BUCKET/deploy/docker-compose.yml
-      - aws s3 sync server/migrations s3://$ARTIFACT_BUCKET/deploy/migrations --delete
   build:
     commands:
       - |
         cat > /tmp/deploy.sh << SCRIPT
         set -e
         cd /home/ubuntu/todo-app
-        mkdir -p server/migrations
         aws s3 cp s3://$ARTIFACT_BUCKET/deploy/docker-compose.yml docker-compose.yml
-        aws s3 sync s3://$ARTIFACT_BUCKET/deploy/migrations server/migrations --delete
         aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY
         docker compose pull
         docker compose up -d
