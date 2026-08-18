@@ -10,6 +10,7 @@ lerna-debug.log*
 .env
 .env.docker
 docker-compose.override.yml
+*.zip
 
 tree.py
 
