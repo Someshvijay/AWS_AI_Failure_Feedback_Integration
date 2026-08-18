@@ -9,31 +9,46 @@ env:
 phases:
   pre_build:
     commands:
+      - echo "ARTIFACT_BUCKET is [$ARTIFACT_BUCKET]"
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - REGISTRY="$ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com"
       - aws s3 cp docker-compose.yml s3://$ARTIFACT_BUCKET/deploy/docker-compose.yml
+      - aws s3 sync server/migrations s3://$ARTIFACT_BUCKET/deploy/migrations --delete
   build:
     commands:
+      - |
+        cat > /tmp/deploy.sh << SCRIPT
+        set -e
+        cd /home/ubuntu/todo-app
+        mkdir -p server/migrations
+        aws s3 cp s3://$ARTIFACT_BUCKET/deploy/docker-compose.yml docker-compose.yml
+        aws s3 sync s3://$ARTIFACT_BUCKET/deploy/migrations server/migrations --delete
+        aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY
+        docker compose pull
+        docker compose up -d
+        docker image prune -f
+        sleep 20
+        docker compose ps
+        curl -sf http://localhost:3000/api/todos > /dev/null || (docker compose logs --tail=50 && exit 1)
+        SCRIPT
+      - cat /tmp/deploy.sh
+      - |
+        python3 -c "
+        import json
+        with open('/tmp/deploy.sh') as f:
+            lines = [l.rstrip('\n') for l in f if l.strip()]
+        json.dump({'commands': lines}, open('/tmp/params.json', 'w'))
+        "
       - |
         CMD_ID=$(aws ssm send-command \
           --instance-ids "$INSTANCE_ID" \
           --document-name "AWS-RunShellScript" \
           --comment "CodePipeline deploy" \
-          --parameters commands="[
-            'set -e',
-            'cd /home/ubuntu/todo-app',
-            'aws s3 cp s3://$ARTIFACT_BUCKET/deploy/docker-compose.yml docker-compose.yml',
-            'aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $REGISTRY',
-            'docker compose pull',
-            'docker compose up -d',
-            'docker image prune -f',
-            'sleep 20',
-            'docker compose ps',
-            'curl -sf http://localhost:3000/api/todos > /dev/null || (docker compose logs --tail=50 && exit 1)'
-          ]" \
+          --parameters file:///tmp/params.json \
           --query 'Command.CommandId' --output text)
-      - echo "SSM command $CMD_ID"
-      - aws ssm wait command-executed --command-id "$CMD_ID" --instance-id "$INSTANCE_ID" || true
+        echo "SSM command $CMD_ID"
+        echo "$CMD_ID" > /tmp/cmd_id.txt
+      - aws ssm wait command-executed --command-id "$(cat /tmp/cmd_id.txt)" --instance-id "$INSTANCE_ID" || true
   post_build:
     commands:
       - |
