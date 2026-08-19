@@ -18,6 +18,7 @@ def from_codepipeline(detail, region, account):
         "source_system": "codepipeline",
         "severity": "high",
         "component": f"{pipeline}/{stage}" + (f"/{action}" if action else ""),
+        "dedupe_key": f"{pipeline}:{exec_id}:{stage}:{action}",
         "summary": f"Pipeline {pipeline} failed at stage {stage}",
         "identifiers": {
             "pipeline": pipeline,
@@ -45,6 +46,9 @@ def from_alarm(detail, region, account):
         "severity": "medium",
         "component": name,
         "summary": f"Alarm {name} entered ALARM",
+        "dedupe_key": f"alarm:{name}:{detail.get('state', {}).get('timestamp')}",
+
+        
         "identifiers": {
             "alarm_name": name,
             "previous_state": detail.get("previousState", {}).get("value"),
