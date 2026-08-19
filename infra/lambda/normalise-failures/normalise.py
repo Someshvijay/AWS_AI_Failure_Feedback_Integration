@@ -12,6 +12,7 @@ def from_codepipeline(detail, region, account):
     action = detail.get("action")
     pipeline = detail.get("pipeline")
     exec_id = detail.get("execution-id")
+    result = detail.get("execution-result", {}) or {}
 
     return {
         "source_system": "codepipeline",
@@ -30,7 +31,7 @@ def from_codepipeline(detail, region, account):
             f"https://{region}.console.aws.amazon.com/codesuite/codepipeline/"
             f"pipelines/{pipeline}/executions/{exec_id}"
         ),
-        "raw_reason": detail.get("execution-result", {}).get("external-execution-summary"),
+        "raw_reason": result.get("external-execution-summary"),
     }
 
 
