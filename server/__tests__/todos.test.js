@@ -91,7 +91,7 @@ describe("PUT /api/todos/:id", () => {
       .put("/api/todos/1")
       .send({ title: "Buy oat milk", completed: true });
 
-    expect(res.status).toBe(999);
+    expect(res.status).toBe(200);
     expect(res.body).toEqual(updatedTask);
   });
 
