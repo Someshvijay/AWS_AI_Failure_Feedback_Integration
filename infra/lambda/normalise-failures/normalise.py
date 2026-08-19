@@ -23,6 +23,8 @@ def from_codepipeline(detail, region, account):
             "stage": stage,
             "action": action,
             "execution_id": exec_id,
+            "build_id": result.get("external-execution-id"),
+            "build_url": result.get("external-execution-url"),
         },
         "console_url": (
             f"https://{region}.console.aws.amazon.com/codesuite/codepipeline/"
