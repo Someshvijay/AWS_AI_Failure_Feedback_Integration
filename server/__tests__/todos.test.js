@@ -39,7 +39,7 @@ describe("GET /api/todos/:id", () => {
 
     const res = await request(app).get("/api/todos/1");
 
-    expect(res.status).toBe(200);
+    expect(res.status).toBe(999);
     expect(res.body).toEqual(mockTask);
   });
 
