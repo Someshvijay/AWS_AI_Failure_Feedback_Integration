@@ -1,0 +1,98 @@
+{
+  "Comment": "Failure triage: branch on source, gather evidence",
+  "StartAt": "WhichSource",
+  "States": {
+    "WhichSource": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Variable": "$.source_system",
+          "StringEquals": "codepipeline",
+          "Next": "GatherBuildEvidence"
+        },
+        {
+          "Variable": "$.source_system",
+          "StringEquals": "cloudwatch-alarm",
+          "Next": "GatherInfraEvidence"
+        }
+      ],
+      "Default": "UnknownSource"
+    },
+
+    "GatherBuildEvidence": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "todo-app-gather-build-evidence",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "failure.$": "$.Payload.failure",
+        "evidence.$": "$.Payload.evidence"
+      },
+      "ResultPath": "$.gathered",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.TooManyRequestsException", "Lambda.ServiceException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "GatherFailed"
+        }
+      ],
+      "Next": "EvidenceReady"
+    },
+
+    "GatherInfraEvidence": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "Parameters": {
+        "FunctionName": "todo-app-gather-infra-evidence",
+        "Payload.$": "$"
+      },
+      "ResultSelector": {
+        "failure.$": "$.Payload.failure",
+        "evidence.$": "$.Payload.evidence"
+      },
+      "ResultPath": "$.gathered",
+      "Retry": [
+        {
+          "ErrorEquals": ["Lambda.TooManyRequestsException", "Lambda.ServiceException"],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 3,
+          "BackoffRate": 2
+        }
+      ],
+      "Catch": [
+        {
+          "ErrorEquals": ["States.ALL"],
+          "ResultPath": "$.error",
+          "Next": "GatherFailed"
+        }
+      ],
+      "Next": "EvidenceReady"
+    },
+
+    "EvidenceReady": {
+      "Type": "Succeed"
+    },
+
+    "UnknownSource": {
+      "Type": "Fail",
+      "Error": "UnknownSourceSystem",
+      "Cause": "Event source_system did not match a known gather path"
+    },
+
+    "GatherFailed": {
+      "Type": "Fail",
+      "Error": "EvidenceGatheringFailed",
+      "Cause": "Could not gather evidence for this failure"
+    }
+  }
+}
