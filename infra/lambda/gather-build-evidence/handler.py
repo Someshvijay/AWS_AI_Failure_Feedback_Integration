@@ -25,7 +25,7 @@ s3 = boto3.client("s3")
 
 MAX_LINES = int(os.environ.get("MAX_LINES", "150"))
 TAIL_FETCH_LIMIT = int(os.environ.get("TAIL_FETCH_LIMIT", "5000"))
-MAX_EXCERPT_BYTES = int(os.environ.get("MAX_EXCERPT_BYTES", "60000"))
+MAX_EXCERPT_BYTES = int(os.environ.get("MAX_EXCERPT_BYTES", "45000"))
 EVIDENCE_BUCKET = os.environ.get("EVIDENCE_BUCKET")
 
 ERROR_PATTERNS = re.compile(
